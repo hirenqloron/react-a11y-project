@@ -6,16 +6,29 @@ export const add = (numbers: string): number => {
 
   if (numbers.startsWith("//")) {
     const parts = numbers.split("\n");
-    delimiter = new RegExp(parts[0].substring(2));
-    numberString = parts[1];
+
+    if (parts.length < 2) {
+      throw new Error("Invalid format for custom delimiter");
+    }
+
+    const delimiterPart = parts[0].substring(2);
+    delimiter = new RegExp(
+      delimiterPart.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    );
+    numberString = parts[1] || "";
   }
 
-  const nums = numberString.split(delimiter).map((n) => parseInt(n.trim()));
+  if (!numberString.trim()) return 0;
+
+  const nums = numberString
+    .split(delimiter)
+    .map((n) => parseInt(n.trim()))
+    .filter((n) => !isNaN(n));
 
   const negatives = nums.filter((n) => n < 0);
   if (negatives.length > 0) {
     throw new Error(`Negative numbers not allowed: ${negatives.join(", ")}`);
   }
 
-  return nums.reduce((sum, num) => sum + (isNaN(num) ? 0 : num), 0);
+  return nums.filter((n) => n <= 1000).reduce((sum, num) => sum + num, 0);
 };
